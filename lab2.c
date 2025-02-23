@@ -106,7 +106,8 @@
     * a: 04
     * z: 1d
    */
-   char *editor = malloc(BUFFER_SIZE);  // don't forget to free this
+   char *editor = mtarrow: 4f
+       lloc(BUFFER_SIZE);  // don't forget to free this
    editor[0] = '\0';
    printf("%s\n", editor);
    int cursor = 0;
@@ -121,24 +122,33 @@
        fbputs(keystate, 6, 0);
        printf("%s\n", editor);
        
+       // read keystate from the buffer
+       
        // letter press
        if (packet.keycode[0] >= 0x04 && packet.keycode[0] <= 0x1d){
         // shift pressed
         if (packet.modifiers & 0x02) {
           editor[cursor++] = 'A' + packet.keycode[0] - 0x04;
           editor[cursor] = 0;
-          printf("%c\n", editor[cursor-1]);
        }
         else {
           editor[cursor++] = 'a' + packet.keycode[0] - 0x04;
           editor[cursor] = 0;
-          printf("%c\n", editor[cursor-1]);
         }
+       }
+      // TODO: number
+       // space
+       else if (packet.keycode[0] == 0x2c) 
+          editor[cursor++] = 0x20;
+          editor[cursor] = 0;
        }
        // backspace
        else if (packet.keycode[0] == 0x2a) {
+        if (cursor > 0){
          editor[--cursor] = 0;
+        }
        }
+       fbclearln(12);
        fbputs(editor, 12, 0);
        printf("%d\n", cursor);
        printf("%s\n", editor);
