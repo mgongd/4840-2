@@ -13,6 +13,7 @@
  #include <unistd.h>
  #include "usbkeyboard.h"
  #include <pthread.h>
+ #include <stdlib.h>
  
  /* Update SERVER_HOST to be the IP address of
   * the chat server you are connecting to
@@ -56,20 +57,16 @@
    }
  
    /* Draw rows of asterisks across the top and bottom of the screen */
-   fbclear();
+  // fbclear();
    printf("cleared\n");
 
    for (col = 0 ; col < 64 ; col++) {
      fbputchar('*', 0, col);
      fbputchar('*', 11, col);
-
-     fbclearln(11);
-
      fbputchar('*', 23, col);
    }
  
    fbputs("Hello CSEE 4840 World!", 4, 10);
-   fbclearchar(9, 0);
  
    /* Open the keyboard */
    if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
@@ -109,32 +106,42 @@
     * a: 04
     * z: 1d
    */
-   char editor[BUFFER_SIZE];
+   char *editor = malloc(BUFFER_SIZE);  // don't forget to free this
+   editor[0] = '\0';
+   printf("%s\n", editor);
    int cursor = 0;
    for (;;) {
      libusb_interrupt_transfer(keyboard, endpoint_address,
              (unsigned char *) &packet, sizeof(packet),
              &transferred, 0);
      if (transferred == sizeof(packet)) {
-       sprintf(keystate, "%02x %02x %02x %02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
-         packet.keycode[1], packet.keycode[2], packet.keycode[3], packet.keycode[4], packet.keycode[5]);
+       sprintf(keystate, "%02x %02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
+         packet.keycode[1], packet.keycode[2], packet.keycode[3]);
        printf("%s\n", keystate);
        fbputs(keystate, 6, 0);
+       printf("%s\n", editor);
        
        // letter press
        if (packet.keycode[0] >= 0x04 && packet.keycode[0] <= 0x1d){
         // shift pressed
-        if (packet.modifiers & 0x02)
+        if (packet.modifiers & 0x02) {
           editor[cursor++] = 'A' + packet.keycode[0] - 0x04;
-        else
+          editor[cursor] = 0;
+          printf("%c\n", editor[cursor-1]);
+       }
+        else {
           editor[cursor++] = 'a' + packet.keycode[0] - 0x04;
+          editor[cursor] = 0;
+          printf("%c\n", editor[cursor-1]);
+        }
        }
        // backspace
        else if (packet.keycode[0] == 0x2a) {
          editor[--cursor] = 0;
        }
-       editor[cursor] = 'Z';
        fbputs(editor, 12, 0);
+       printf("%d\n", cursor);
+       printf("%s\n", editor);
        if (packet.keycode[0] == 0x29) { /* ESC pressed? */
    break;
        }
