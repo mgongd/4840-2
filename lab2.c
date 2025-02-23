@@ -57,18 +57,19 @@
  
    /* Draw rows of asterisks across the top and bottom of the screen */
    fbclear();
+   printf("cleared\n");
 
    for (col = 0 ; col < 64 ; col++) {
      fbputchar('*', 0, col);
-     fbclearln(0);
      fbputchar('*', 11, col);
 
-     fbputchar(0, 11, col);
+     fbclearln(11);
 
      fbputchar('*', 23, col);
    }
  
    fbputs("Hello CSEE 4840 World!", 4, 10);
+   fbclearchar(9, 0)
  
    /* Open the keyboard */
    if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
@@ -115,8 +116,8 @@
              (unsigned char *) &packet, sizeof(packet),
              &transferred, 0);
      if (transferred == sizeof(packet)) {
-       sprintf(keystate, "%02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
-         packet.keycode[1], packet.keycode[2]);
+       sprintf(keystate, "%02x %02x %02x %02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
+         packet.keycode[1], packet.keycode[2], packet.keycode[3], packet.keycode[4], packet.keycode[5]);
        printf("%s\n", keystate);
        fbputs(keystate, 6, 0);
        

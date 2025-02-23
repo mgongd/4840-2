@@ -75,7 +75,7 @@
      mask = 0x80;
      for (x = 0 ; x < FONT_WIDTH ; x++) {
        if (pixels & mask) {	
-   pixel[0] = 255; /* Red */
+    pixel[0] = 255; /* Red */
          pixel[1] = 255; /* Green */
          pixel[2] = 255; /* Blue */
          pixel[3] = 0;
@@ -134,8 +134,22 @@
      memset(line, 0, fb_finfo.line_length);
      line += fb_finfo.line_length;
    }
- 
- 
+ }
+
+ void fbclearchar(int row, int col)
+ {
+  int y, x;
+  unsigned char *line = framebuffer + (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length;
+  for (y = 0; y < FONT_HEIGHT * 2; y++)
+  {
+    for (x = 0 ; x < FONT_WIDTH ; x++) {
+      memset(line, 0, 1);
+
+
+
+    }
+    line += fb_finfo.line_length;
+  }
  }
   
  static unsigned char font[] = {
