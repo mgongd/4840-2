@@ -59,6 +59,8 @@
    for (col = 0 ; col < 64 ; col++) {
      fbputchar('*', 0, col);
      fbputchar('*', 11, col);
+     fbputchar(0, 11, col);
+
      fbputchar('*', 23, col);
    }
  
@@ -109,8 +111,8 @@
              (unsigned char *) &packet, sizeof(packet),
              &transferred, 0);
      if (transferred == sizeof(packet)) {
-       sprintf(keystate, "%02x %02x %02x", packet.modifiers, packet.keycode[0],
-         packet.keycode[1]);
+       sprintf(keystate, "%02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
+         packet.keycode[1], packet.keycode[2]);
        printf("%s\n", keystate);
        fbputs(keystate, 6, 0);
        
@@ -126,7 +128,7 @@
        else if (packet.keycode[0] == 0x2a) {
          editor[--cursor] = 0;
        }
-       editor[cursor+1] = 179;
+       editor[cursor] = 'Z';
        fbputs(editor, 12, 0);
        if (packet.keycode[0] == 0x29) { /* ESC pressed? */
    break;
