@@ -18,6 +18,7 @@
  #include <sys/mman.h>
  #include <sys/ioctl.h>
  #include <stdlib.h>
+ #include <string.h>
  
  #include <linux/fb.h>
  
@@ -121,7 +122,7 @@
  
  void fbclear() 
  {
-   membset(framebuffer, 0, fb_finfo.smem_len);
+   memset(framebuffer, 0, fb_finfo.smem_len);
  }
  
  void fbclearln(int row)
