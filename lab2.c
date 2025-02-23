@@ -116,13 +116,17 @@
        
        // letter press
        if (packet.keycode[0] >= 0x04 && packet.keycode[0] <= 0x1d){
-         editor[cursor] = 'a' + packet.keycode[0] - 0x04;
-         cursor++;
+        // shift pressed
+        if (packet.modifiers & 0x02)
+          editor[cursor++] = 'A' + packet.keycode[0] - 0x04;
+        else
+          editor[cursor++] = 'a' + packet.keycode[0] - 0x04;
        }
+       // backspace
        else if (packet.keycode[0] == 0x2a) {
-         editor[cursor] = 0;
-         cursor --;
+         editor[--cursor] = 0;
        }
+       editor[cursor+1] = 179;
        fbputs(editor, 12, 0);
        if (packet.keycode[0] == 0x29) { /* ESC pressed? */
    break;
