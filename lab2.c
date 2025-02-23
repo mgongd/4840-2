@@ -56,9 +56,13 @@
    }
  
    /* Draw rows of asterisks across the top and bottom of the screen */
+   fbclear();
+
    for (col = 0 ; col < 64 ; col++) {
      fbputchar('*', 0, col);
+     fbclearln(0);
      fbputchar('*', 11, col);
+
      fbputchar(0, 11, col);
 
      fbputchar('*', 23, col);
