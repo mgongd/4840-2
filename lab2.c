@@ -69,7 +69,7 @@
    }
  
    fbputs("Hello CSEE 4840 World!", 4, 10);
-   fbclearchar(9, 0)
+   fbclearchar(9, 0);
  
    /* Open the keyboard */
    if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
