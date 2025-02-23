@@ -170,7 +170,8 @@ int main()
 
             // write line
             fbclearln(12);
-            fbputs(editor, 12, 0);
+            fbclearln(13);
+            fbputchunk(editor, 12, 0, 128);
             printf("%d\n", cursor);
             printf("%s\n", editor);
             if (packet.keycode[0] == 0x29) { /* ESC pressed? */
@@ -179,7 +180,6 @@ int main()
             // updates previous keycode
             for (int i = 0; i < 6; i++) {
                 prev_keycode[i] = packet.keycode[i];
-                printf("%02x stored\n", prev_keycode[i]);
             }
         }
 

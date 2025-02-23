@@ -113,12 +113,28 @@
    char c;
    while ((c = *s++) != 0) fbputchar(c, row, col++);
  }
+
+ void fbputchunk(const char *s, int row, int offset, int n) {
+  char c;
+  s += offset;
+  int col = 0;
+  while ((c = *s++) != 0 && n > 0) {
+    if (col < 64)
+      fbputchar(c, row, col++);
+    else {  // start a new line
+      col = 0;
+      fbputchar(c, ++row, col);
+    }    
+    n--;
+  }
+ }
  
  /* 8 X 16 console font from /lib/kbd/consolefonts/lat0-16.psfu.gz
  
  od --address-radix=n --width=16 -v -t x1 -j 4 -N 2048 lat0-16.psfu
  
  */
+
  
  void fbclear() 
  {
@@ -148,6 +164,8 @@
     left += fb_finfo.line_length;
   }
  }
+
+ void fbscroll(int row, int delta, int n)
   
  static unsigned char font[] = {
    0x00, 0x00, 0x7e, 0xc3, 0x99, 0x99, 0xf3, 0xe7, 0xe7, 0xff, 0xe7, 0xe7, 0x7e, 0x00, 0x00, 0x00,
