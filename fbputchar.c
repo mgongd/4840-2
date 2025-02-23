@@ -103,6 +103,49 @@
      if (y & 0x1) pixelp++;
    }
  }
+
+ void fbputcursor(char c, int row, int col)
+ {
+   int x, y;
+   unsigned char pixels, *pixelp = font + FONT_HEIGHT * c;
+   unsigned char mask;
+   unsigned char *pixel, *left = framebuffer +
+     (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length +
+     (col * FONT_WIDTH * 2 + fb_vinfo.xoffset) * BITS_PER_PIXEL / 8;
+   for (y = 0 ; y < FONT_HEIGHT * 2 ; y++, left += fb_finfo.line_length) {
+     pixels = *pixelp;
+     pixel = left;
+     mask = 0x80;
+     for (x = 0 ; x < FONT_WIDTH ; x++) {
+       if (pixels & ~mask) {	
+    pixel[0] = 255; /* Red */
+         pixel[1] = 255; /* Green */
+         pixel[2] = 255; /* Blue */
+         pixel[3] = 0;
+       } else {
+   pixel[0] = 0;
+         pixel[1] = 0;
+         pixel[2] = 0;
+         pixel[3] = 0;
+       }
+       pixel += 4;
+       if (pixels & mask) {
+   pixel[0] = 255; /* Red */
+         pixel[1] = 255; /* Green */
+         pixel[2] = 255; /* Blue */
+         pixel[3] = 0;
+       } else {
+   pixel[0] = 0;
+         pixel[1] = 0;
+         pixel[2] = 0;
+         pixel[3] = 0;
+       }
+       pixel += 4;
+       mask >>= 1;
+     }
+     if (y & 0x1) pixelp++;
+   }
+ }
  
  /*
   * Draw the given string at the given row/column.
@@ -120,7 +163,7 @@
   int col = 0;
   while ((c = *s++) != 0 && n > 0) {
     if (col < 64)
-      fbputchar(c, row, col++);
+      fbputcursor(c, row, col++);
     else {  // start a new line
       col = 0;
       fbputchar(c, ++row, col);
@@ -165,7 +208,6 @@
   }
  }
 
- void fbscroll(int row, int delta, int n)
   
  static unsigned char font[] = {
    0x00, 0x00, 0x7e, 0xc3, 0x99, 0x99, 0xf3, 0xe7, 0xe7, 0xff, 0xe7, 0xe7, 0x7e, 0x00, 0x00, 0x00,
