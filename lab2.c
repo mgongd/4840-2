@@ -146,8 +146,7 @@ int main()
             if (key >= 0x04 && key <= 0x1d){
                 // shift pressed
                 if (packet.modifiers & 0x22) {
-                    editor[cursor++] = 'A' + key - 0x04;
-                    editor[cursor] = 0;
+                    insert(editor, &cursor, 'A' + key - 0x04);
                 }
                 else {
                     insert(editor, &cursor, 'a' + key - 0x04);
@@ -157,15 +156,11 @@ int main()
             // TODO: pervent editor overflow
             // space
             else if (key == 0x2c) {
-                editor[cursor++] = 0x20;
-                editor[cursor] = 0;
+              insert(editor, &cursor, 0x20);
             }
             // backspace
             else if (key == 0x2a) {
-                printf("backspace\n");
-                if (cursor > 0){
-                    editor[--cursor] = 0;
-                }
+              delete(editor, &cursor);
             }
 
             // write line
@@ -209,6 +204,10 @@ void *network_thread_f(void *ignored)
     return NULL;
 }
 
+/*
+ * Inserts the character `text` to `buf`, at position specified by `cursor`
+ * Cursor is the index of the buf array
+ */
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
@@ -221,4 +220,17 @@ void insert(char *buf, int* cursor, const char text) {
     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
     buf[*cursor] = text;
     (*cursor)++;
+}
+void delete(char *buf, int* cursor) {
+  int len = strlen(buf);
+
+  // don't forget \0
+  if (cursor == 0) {
+      printf("Empty\n");
+      return;
+  }
+
+  memmove(buf + *cursor - 1, buf + *cursor, len - *cursor + 1);
+  buf[*cursor] = text;
+  (*cursor);
 }

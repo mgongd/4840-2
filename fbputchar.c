@@ -104,6 +104,7 @@ void fbputchar(char c, int row, int col)
     }
 }
 
+/* puts inverted cursor character to the screen */
 void fbputcursor(char c, int row, int col)
 {
     int x, y;
@@ -157,6 +158,12 @@ void fbputs(const char *s, int row, int col)
     while ((c = *s++) != 0) fbputchar(c, row, col++);
 }
 
+/*
+ * Draw the given string at given row, starting at `s[offset]`
+ * Draws `n` characters, or until the string terminates
+ * Automatically switches rows (64 characters)
+ */
+
 void fbputchunk(const char *s, int row, int offset, int n) {
     char c;
     s += offset;
@@ -178,12 +185,13 @@ void fbputchunk(const char *s, int row, int offset, int n) {
 
 */
 
-
+/* Clear the entire screen */
 void fbclear() 
 {
     memset(framebuffer, 0, fb_finfo.smem_len);
 }
 
+/* Clear one line */
 void fbclearln(int row)
 {
     int y;
@@ -195,6 +203,8 @@ void fbclearln(int row)
     }
 }
 
+/* Clear one character
+ * WARNING: not tested yet*/
 void fbclearchar(int row, int col)
 {
     int y, x;
