@@ -34,6 +34,7 @@
  */
 
 int sockfd; /* Socket file descriptor */
+void insert(char *, int *, const char);
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -144,13 +145,12 @@ int main()
             // letter press
             if (key >= 0x04 && key <= 0x1d){
                 // shift pressed
-                if (packet.modifiers & 0x02) {
+                if (packet.modifiers & 0x22) {
                     editor[cursor++] = 'A' + key - 0x04;
                     editor[cursor] = 0;
                 }
                 else {
-                    editor[cursor++] = 'a' + key - 0x04;
-                    editor[cursor] = 0;
+                    insert(editor, &cursor, 'a' + key - 0x04);
                 }
             }
             // TODO: number
@@ -209,4 +209,16 @@ void *network_thread_f(void *ignored)
     return NULL;
 }
 
+void insert(char *buf, int* cursor, const char text) {
+    int len = strlen(buf);
 
+    // don't forget \0
+    if (len + 1 >= BUFFER_SIZE) {
+        printf("Buffer full\n");
+        return;
+    }
+
+    memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
+    buf[*cursor] = text;
+    (*cursor)++;
+}
