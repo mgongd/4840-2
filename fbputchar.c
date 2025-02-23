@@ -139,16 +139,13 @@
  void fbclearchar(int row, int col)
  {
   int y, x;
-  unsigned char *line = framebuffer + (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length;
+  unsigned char *left = framebuffer +
+  (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length +
+  (col * FONT_WIDTH * 2 + fb_vinfo.xoffset) * BITS_PER_PIXEL / 8;
   for (y = 0; y < FONT_HEIGHT * 2; y++)
   {
-    for (x = 0 ; x < FONT_WIDTH ; x++) {
-      memset(line, 0, 1);
-
-
-
-    }
-    line += fb_finfo.line_length;
+    memset(left, 0, FONT_WIDTH * 2 * (BITS_PER_PIXEL / 8));
+    left += fb_finfo.line_length;
   }
  }
   

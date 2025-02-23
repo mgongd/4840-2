@@ -12,5 +12,6 @@ extern void fbputchar(char, int, int);
 extern void fbputs(const char *, int, int);
 extern void fbclear();
 extern void fbclearln(int);
+extern void fbclearchar(int, int);
 
 #endif
