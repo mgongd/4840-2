@@ -170,7 +170,7 @@ void fbputchunk(const char *s, int row, int offset, int n) {
     int col = 0;
     while ((c = *s++) != 0 && n > 0) {
         if (col < 64)
-            fbputcursor(c, row, col++);
+            fbputchar(c, row, col++);
         else {  // start a new line
             col = 0;
             fbputchar(c, ++row, col);

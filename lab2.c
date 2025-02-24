@@ -35,6 +35,7 @@
 
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
+void delete(char *, int *);
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -225,12 +226,11 @@ void delete(char *buf, int* cursor) {
   int len = strlen(buf);
 
   // don't forget \0
-  if (cursor == 0) {
+  if (*cursor == 0) {
       printf("Empty\n");
       return;
   }
 
   memmove(buf + *cursor - 1, buf + *cursor, len - *cursor + 1);
-  buf[*cursor] = text;
-  (*cursor);
+  (*cursor)--;
 }
