@@ -32,7 +32,7 @@
  * http://www.thegeekstuff.com/2011/12/c-socket-programming/
  * 
  */
-
+int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
@@ -169,6 +169,7 @@ int main()
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
                     cursor = 0;
+                    current_row = 1;
                     // Redraw the dividing line
                     for (int col = 0; col < 64; col++) {
                         fbputchar('*', 0, col);
@@ -230,7 +231,7 @@ void *network_thread_f(void *ignored)
     //     printf("%s", recvBuf);
     //     fbputs(recvBuf, 8, 0);
     // }
-    int current_row = 0;
+    // int current_row = 0;
 
     while ((n = read(sockfd, recvBuf, BUFFER_SIZE - 1)) > 0) {
         recvBuf[n] = '\0';  
