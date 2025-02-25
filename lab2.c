@@ -163,6 +163,20 @@ int main()
             else if (key == 0x2a) {
               delete(editor, &cursor);
             }
+            else if (key == 0x28) {  // Enter (Return) key
+                if (strlen(editor) > 0) {
+                    write(sockfd, editor, strlen(editor));  // Send a message to the server
+            
+                    // Display sent messages at the top of the screen
+                    fbputchunk(editor, 0, 0, BUFFER_SIZE);
+            
+                    // Clear the input box (bottom area)
+                    memset(editor, 0, BUFFER_SIZE);
+                    fbclearln(12);
+                    fbclearln(13);
+                    cursor = 0;
+                }
+            }
 
             // write line
             fbclearln(12);
@@ -195,14 +209,37 @@ void *network_thread_f(void *ignored)
 {
     char recvBuf[BUFFER_SIZE];
     int n;
-    /* Receive data */
-    while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
-        recvBuf[n] = '\0';
-        printf("%s", recvBuf);
-        fbputs(recvBuf, 8, 0);
+    // /* Receive data */
+    // while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
+    //     recvBuf[n] = '\0';
+    //     printf("%s", recvBuf);
+    //     fbputs(recvBuf, 8, 0);
+    // }
+    int current_row = 0;
+
+    while ((n = read(sockfd, recvBuf, BUFFER_SIZE - 1)) > 0) {
+        recvBuf[n] = '\0';  
+        printf("Received: %s\n", recvBuf);
+
+        // Display server messages, each message is wrapped
+        fbputchunk(recvBuf, current_row, 0, BUFFER_SIZE);
+        current_row++;
+
+        // If the message exceeds 8 lines, scroll the screen
+        if (current_row >= 8) {
+            fbscroll();
+            current_row = 7;
+        }
     }
 
     return NULL;
+}
+
+void fbscroll() {
+    memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
+            fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
+    
+    fbclearln(7);  // Clear the last row
 }
 
 /*
