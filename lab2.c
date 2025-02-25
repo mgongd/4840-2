@@ -169,6 +169,15 @@ int main()
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
                     cursor = 0;
+                    // Redraw the dividing line
+                    for (int col = 0; col < 64; col++) {
+                        fbputchar('*', 0, col);
+                        fbputchar('*', 11, col);
+                        fbputchar('*', 23, col);
+                    }
+
+                    // Redisplay the welcome message
+                    fbputs("Hello CSEE 4840 World!", 4, 10);
                 }
                 else if (strlen(editor) > 0) {
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
