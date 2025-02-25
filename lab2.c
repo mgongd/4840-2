@@ -169,9 +169,8 @@ int main()
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
                     cursor = 0;
-                    return;
                 }
-                if (strlen(editor) > 0) {
+                else if (strlen(editor) > 0) {
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
             
                     // Display sent messages at the top of the screen
