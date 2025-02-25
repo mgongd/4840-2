@@ -164,6 +164,14 @@ int main()
               delete(editor, &cursor);
             }
             else if (key == 0x28) {  // Enter (Return) key
+                 // If the user enters "/clear", clear the screen
+                if (strcmp(editor, "/clear") == 0) {
+                    fbclear();  // Clear the entire VGA screen
+                    current_row = 0;  // Let new messages start from the top
+                    memset(editor, 0, BUFFER_SIZE);  // Clear the input box
+                    cursor = 0;
+                    return;
+                }
                 if (strlen(editor) > 0) {
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
             
