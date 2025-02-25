@@ -167,7 +167,6 @@ int main()
                  // If the user enters "/clear", clear the screen
                 if (strcmp(editor, "/clear") == 0) {
                     fbclear();  // Clear the entire VGA screen
-                    current_row = 0;  // Let new messages start from the top
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
                     cursor = 0;
                     return;
