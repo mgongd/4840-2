@@ -226,21 +226,21 @@ void *network_thread_f(void *ignored)
         current_row++;
 
         // If the message exceeds 8 lines, scroll the screen
-        if (current_row >= 8) {
-            fbscroll();
-            current_row = 7;
-        }
+        // if (current_row >= 8) {
+        //     fbscroll();
+        //     current_row = 7;
+        // }
     }
 
     return NULL;
 }
 
-void fbscroll() {
-    memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
-            fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
+// void fbscroll() {
+//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
+//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
     
-    fbclearln(7);  // Clear the last row
-}
+//     fbclearln(7);  // Clear the last row
+// }
 
 /*
  * Inserts the character `text` to `buf`, at position specified by `cursor`
