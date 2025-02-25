@@ -165,7 +165,7 @@ int main()
             }
             else if (key == 0x28) {  // Enter (Return) key
                  // If the user enters "/clear", clear the screen
-                if (strcmp(editor, "/clear") == 0) {
+                if (strcmp(editor, "clear") == 0) {
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
                     cursor = 0;
