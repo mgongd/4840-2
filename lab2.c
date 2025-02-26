@@ -64,9 +64,9 @@ int main()
     printf("cleared\n");
 
     for (col = 0 ; col < 64 ; col++) {
-        fbputchar('*', 0, col);
+        // fbputchar('*', 0, col);
         fbputchar('*', 11, col);
-        fbputchar('*', 23, col);
+        // fbputchar('*', 23, col);
     }
 
     fbputs("Hello CSEE 4840 World!", 4, 10);
@@ -167,7 +167,7 @@ int main()
             else if (key == 0x28) {  // Enter (Return) key
                 // Refresh top line
                 for (int col = 0; col < 64; col++) {
-                        fbputchar('*', 0, col);
+                        fbputchar(' ', 0, col);
                     }
                  // If the user enters "/clear", clear the screen
                 if (strcmp(editor, "clear") == 0) {
