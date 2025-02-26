@@ -24,6 +24,11 @@
 
 #define BUFFER_SIZE 128
 
+#define MAX_ROWS 19   // VGA display size
+#define MAX_COLS 64
+
+char screen[MAX_ROWS][MAX_COLS] = { {' '} };  // Buffer to store screen content
+
 /*
  * References:
  *
@@ -36,7 +41,6 @@ int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
-void scroll_vga();
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -65,9 +69,7 @@ int main()
     printf("cleared\n");
 
     for (col = 0 ; col < 64 ; col++) {
-        // fbputchar('*', 0, col);
-        fbputchar('*', 11, col);
-        // fbputchar('*', 23, col);
+        fbputchar('*', 21, col);
     }
 
     fbputs("Hello CSEE 4840 World!", 4, 10);
@@ -124,7 +126,7 @@ int main()
                     packet.keycode[1], packet.keycode[2], packet.keycode[3]);
             printf("%s\n", keystate);
             printf("prev %02x %02x %02x %02x\n", prev_keycode[0],prev_keycode[1], prev_keycode[2], prev_keycode[3]);
-            fbputs(keystate, 6, 0);
+            // fbputs(keystate, 6, 0);
             printf("%s\n", editor);
 
             // compares state with previous buffer
@@ -143,6 +145,15 @@ int main()
                 }
             }
             printf("keystate: %02x\n", key);
+            
+
+            // arrow press
+            if (key == 0x50) {
+                if (cursor > 0)     cursor--;
+            }
+            if (key == 0x4f) {
+                if (cursor < strlen(editor))   cursor++;
+            }
 
             // letter press
             if (key >= 0x04 && key <= 0x1d){
@@ -170,7 +181,7 @@ int main()
                 for (int col = 0; col < 64; col++) {
                         fbputchar(' ', 0, col);
                     }
-                 // If the user enters "clear", clear the screen
+                 // If the user enters "/clear", clear the screen
                 if (strcmp(editor, "clear") == 0) {
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
@@ -195,26 +206,25 @@ int main()
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
 
                     // Scroll the screen
-                    if (current_row >= 15) {
-                        scroll_vga();
-                        current_row = 14;
+                    if (current_row >= 19) {
+                      scroll_vga();
+                      current_row = 18;
                     }
-            
                     // Display sent messages at the top of the screen
                     fbputchunk(editor, 0, 0, BUFFER_SIZE);
             
                     // Clear the input box (bottom area)
                     memset(editor, 0, BUFFER_SIZE);
-                    fbclearln(12);
-                    fbclearln(13);
+                    fbclearln(22);
+                    fbclearln(23);
                     cursor = 0;
                 }
             }
 
             // write line
-            fbclearln(12);
-            fbclearln(13);
-            fbputchunk(editor, 12, 0, 128);
+            fbclearln(22);
+            fbclearln(23);
+            fbputeditor(editor, &cursor, 22, 0, strlen(editor));
             printf("%d\n", cursor);
             printf("%s\n", editor);
             if (packet.keycode[0] == 0x29) { /* ESC pressed? */
@@ -258,23 +268,41 @@ void *network_thread_f(void *ignored)
         fbputchunk(recvBuf, current_row, 0, BUFFER_SIZE);
         current_row++;
 
-        // If the message exceeds 8 lines, scroll the screen
-        if (current_row >= 15) {
-            scroll_vga();
-            current_row = 14;
-        }
+        // If the message exceeds 19 lines, scroll the screen
+        if (current_row >= 19) {
+          scroll_vga();
+          current_row = 18;
+      }
     }
 
     return NULL;
 }
 
 void scroll_vga() {
-    for (int row = 0; row < 15; row++) {
-        fbcopy(row + 1, row);
-    }
-    fbclearln(14);
+  // Move all lines up in the buffer
+  for (int row = 1; row < MAX_ROWS; row++) {
+      for (int col = 0; col < MAX_COLS; col++) {
+          screen[row - 1][col] = screen[row][col];  // Shift text up
+          fbputchar(screen[row][col], row - 1, col); // Update VGA display
+      }
+  }
+
+  // Clear the last row
+  fbclearln(max_rows - 1);
+  // Clear the last row in the buffer
+  for (int col = 0; col < MAX_COLS; col++) {
+      screen[MAX_ROWS - 1][col] = ' ';
+      fbputchar(' ', MAX_ROWS - 1, col); // Clear last row on VGA
+  }
+
 }
 
+// void fbscroll() {
+//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
+//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
+    
+//     fbclearln(7);  // Clear the last row
+// }
 
 /*
  * Inserts the character `text` to `buf`, at position specified by `cursor`
@@ -297,15 +325,9 @@ void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
     // Make sure the buffer does not overflow, leaving extra space for '\0' and '|')
-    if (len + 2 >= BUFFER_SIZE) {
+    if (len + 1 >= BUFFER_SIZE) {
         printf("Buffer full\n");
         return;
-    }
-
-    // **Remove the old cursor '|'
-    char *cursorPos = strchr(buf, '|'); // Search cursor '|'
-    if (cursorPos) {
-        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
     }
 
     // Shift the string right
@@ -313,13 +335,6 @@ void insert(char *buf, int* cursor, const char text) {
 
     buf[*cursor] = text;
     (*cursor)++;
-
-    // Insert cursor '|' at the new cursor position
-    memmove(buf + *cursor + 1, buf + *cursor, strlen(buf) - *cursor + 1);
-    buf[*cursor] = '|';
-
-    // Make sure the string ends with '\0'
-    buf[len + 2] = '\0';
 }
 
 void delete(char *buf, int* cursor) {
