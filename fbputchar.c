@@ -179,6 +179,20 @@ void fbputchunk(const char *s, int row, int offset, int n) {
     }
 }
 
+void fbputeditor(const char *s, int row, int offset, int n) {
+    char c;
+    s += offset;
+    int col = 0;
+    while ((c = *s++) != 0 && n > 0) {
+        if (col < 64)
+            fbputchar(c, row, col++);
+        else {  // start a new line
+            col = 0;
+            fbputchar(c, ++row, col);
+        }    
+        n--;
+    }
+}
 /* 8 X 16 console font from /lib/kbd/consolefonts/lat0-16.psfu.gz
 
    od --address-radix=n --width=16 -v -t x1 -j 4 -N 2048 lat0-16.psfu
