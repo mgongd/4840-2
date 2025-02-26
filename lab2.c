@@ -140,6 +140,15 @@ int main()
                 }
             }
             printf("keystate: %02x\n", key);
+            
+
+            // arrow press
+            if (key == 0x50) {
+                if (cursor > 0)     cursor--;
+            }
+            if (key == 0x4f) {
+                if (cursor < strlen(editor))   cursor++;
+            }
 
             // letter press
             if (key >= 0x04 && key <= 0x1d){
@@ -205,7 +214,7 @@ int main()
             // write line
             fbclearln(22);
             fbclearln(23);
-            fbputchunk(editor, 22, 0, 128);
+            fbputeditor(editor, &cursor, 22, 0, strlen(editor));
             printf("%d\n", cursor);
             printf("%s\n", editor);
             if (packet.keycode[0] == 0x29) { /* ESC pressed? */

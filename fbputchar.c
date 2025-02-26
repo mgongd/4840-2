@@ -101,7 +101,7 @@ void fbputchar(char c, int row, int col)
             mask >>= 1;
         }
         if (y & 0x1) pixelp++;
-    }
+   }
 }
 
 /* puts inverted cursor character to the screen */
@@ -183,15 +183,19 @@ void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
     char c;
     s += offset;
     int col = 0;
-    while ((c = *s++) != 0 && n > 0) {
-        if (col < 64)
-            fbputchar(c, row, col++);
-        else {  // start a new line
-            col = 0;
-            fbputchar(c, ++row, col);
-        }    
-        n--;
-    }
+    int i = 0;
+        while ((c = *s++) != 0 && i < n) {
+            if (col < 64)
+                if (i == *cursor)   fbputcursor(c, row, col++);
+                else fbputchar(c, row, col++);
+            else {  // start a new line
+                col = 0;
+                if (i == *cursor) fbputcursor(c, ++row, col);
+                else  fbputchar(c, ++row, col);
+            }    
+            i++;
+        }
+    if (*cursor == n) fbputcursor(' ', row, col++);
 }
 /* 8 X 16 console font from /lib/kbd/consolefonts/lat0-16.psfu.gz
 
