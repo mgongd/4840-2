@@ -151,16 +151,12 @@ int main()
                 }
                 else {
                     insert(editor, &cursor, 'a' + key - 0x04);
-                    // **更新 VGA 屏幕输入框**
-                    // fbclearln(12);
-                    // fbclearln(13);
-                    // fbputchunk(editor, 12, 0, cursor);
-
-                    // **在光标位置绘制 '|'**
-                    // if (cursor < BUFFER_SIZE - 1) {
-                    fbputchar('|', 12, cursor);
-                    // }
                     }
+                // **在 `editor` 末尾插入光标**
+                char editorWithCursor[BUFFER_SIZE + 1];  // 额外 +1 以存放 `|`
+                strncpy(editorWithCursor, editor, BUFFER_SIZE);
+                editorWithCursor[cursor] = '|';  // 在 `cursor` 位置插入 `|`
+                editorWithCursor[cursor + 1] = '\0';  // 确保字符串结束
             }
             // TODO: number
             // TODO: pervent editor overflow
