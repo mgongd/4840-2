@@ -152,11 +152,6 @@ int main()
                 else {
                     insert(editor, &cursor, 'a' + key - 0x04);
                     }
-                // **在 `editor` 末尾插入光标**
-                char editorWithCursor[BUFFER_SIZE + 1];  // 额外 +1 以存放 `|`
-                strncpy(editorWithCursor, editor, BUFFER_SIZE);
-                editorWithCursor[cursor] = '|';  // 在 `cursor` 位置插入 `|`
-                editorWithCursor[cursor + 1] = '\0';  // 确保字符串结束
             }
             // TODO: number
             // TODO: pervent editor overflow
@@ -271,19 +266,49 @@ void *network_thread_f(void *ignored)
  * Inserts the character `text` to `buf`, at position specified by `cursor`
  * Cursor is the index of the buf array
  */
+// void insert(char *buf, int* cursor, const char text) {
+//     int len = strlen(buf);
+
+//     // don't forget \0
+//     if (len + 1 >= BUFFER_SIZE) {
+//         printf("Buffer full\n");
+//         return;
+//     }
+
+//     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
+//     buf[*cursor] = text;
+//     (*cursor)++;
+// }
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
-    // don't forget \0
-    if (len + 1 >= BUFFER_SIZE) {
+    // 确保缓冲区不会溢出（额外留一个位置给 '\0'）
+    if (len + 2 >= BUFFER_SIZE) {  // 额外预留 1 个字符给光标 '|'
         printf("Buffer full\n");
         return;
     }
 
+    // **移除旧光标 '|'（如果存在）**
+    char *cursorPos = strchr(buf, '|'); // 查找光标 '|'
+    if (cursorPos) {
+        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // 删除光标
+    }
+
+    // **右移字符串，腾出空间**
     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
+
+    // **插入字符**
     buf[*cursor] = text;
     (*cursor)++;
+
+    // **在新的 cursor 位置插入光标 '|'**
+    memmove(buf + *cursor + 1, buf + *cursor, strlen(buf) - *cursor + 1);
+    buf[*cursor] = '|';
+
+    // **确保字符串以 '\0' 结尾**
+    buf[len + 2] = '\0';
 }
+
 void delete(char *buf, int* cursor) {
   int len = strlen(buf);
 
