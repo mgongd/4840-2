@@ -64,9 +64,7 @@ int main()
     printf("cleared\n");
 
     for (col = 0 ; col < 64 ; col++) {
-        // fbputchar('*', 0, col);
-        fbputchar('*', 11, col);
-        // fbputchar('*', 23, col);
+        fbputchar('*', 21, col);
     }
 
     fbputs("Hello CSEE 4840 World!", 4, 10);
@@ -198,16 +196,16 @@ int main()
             
                     // Clear the input box (bottom area)
                     memset(editor, 0, BUFFER_SIZE);
-                    fbclearln(12);
-                    fbclearln(13);
+                    fbclearln(22);
+                    fbclearln(23);
                     cursor = 0;
                 }
             }
 
             // write line
-            fbclearln(12);
-            fbclearln(13);
-            fbputchunk(editor, 12, 0, 128);
+            fbclearln(22);
+            fbclearln(23);
+            fbputchunk(editor, 22, 0, 128);
             printf("%d\n", cursor);
             printf("%s\n", editor);
             if (packet.keycode[0] == 0x29) { /* ESC pressed? */
