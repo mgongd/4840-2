@@ -60,7 +60,7 @@ int main()
     }
 
     /* Draw rows of asterisks across the top and bottom of the screen */
-    // fbclear();
+    fbclear();
     printf("cleared\n");
 
     for (col = 0 ; col < 64 ; col++) {
@@ -178,7 +178,7 @@ int main()
                     }
 
                     // Redisplay the welcome message
-                    fbputs("Hello CSEE 4840 World!", 4, 10);
+                    // fbputs("Hello CSEE 4840 World!", 4, 10);
                 }
                 else if (strlen(editor) > 0) {
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
