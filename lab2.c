@@ -163,6 +163,15 @@ int main()
             else if (key == 0x2a) {
               delete(editor, &cursor);
             }
+            // Update VGA screen input box
+            fbclearln(12);
+            fbclearln(13);
+            fbputchunk(editor, 12, 0, 128);
+            
+            // **Draw '|' at the cursor position
+            if (cursor < BUFFER_SIZE - 1) {
+                fbputchar('|', 12, cursor);
+            }
             else if (key == 0x28) {  // Enter (Return) key
                 for (int col = 0; col < 64; col++) {
                         fbputchar('*', 0, col);
