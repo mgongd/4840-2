@@ -155,12 +155,12 @@ int main()
                 // **更新 VGA 屏幕输入框**
                 fbclearln(12);
                 fbclearln(13);
-                fbputchunk(editor, 12, 0, 128);
+                fbputchunk(editor, 12, 0, cursor);
 
                 // **在光标位置绘制 '|'**
-                if (cursor < BUFFER_SIZE - 1) {
-                    fbputchar('|', 12, cursor);
-                }
+                // if (cursor < BUFFER_SIZE - 1) {
+                fbputchar('|', 12, cursor);
+                // }
             }
             // TODO: number
             // TODO: pervent editor overflow
