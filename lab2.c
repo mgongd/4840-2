@@ -165,6 +165,7 @@ int main()
             }
             
             else if (key == 0x28) {  // Enter (Return) key
+                // Refresh top line
                 for (int col = 0; col < 64; col++) {
                         fbputchar('*', 0, col);
                     }
@@ -185,6 +186,11 @@ int main()
                     // fbputs("Hello CSEE 4840 World!", 4, 10);
                 }
                 else if (strlen(editor) > 0) {
+                    // Remove the cursor '|'
+                    char *cursorPos = strchr(editor, '|');
+                    if (cursorPos) {
+                        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
+                    }
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
             
                     // Display sent messages at the top of the screen
