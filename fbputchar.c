@@ -179,7 +179,7 @@ void fbputchunk(const char *s, int row, int offset, int n) {
     }
 }
 
-void fbputeditor(const char *s, int row, int offset, int n) {
+void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
     char c;
     s += offset;
     int col = 0;

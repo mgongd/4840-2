@@ -121,7 +121,7 @@ int main()
                     packet.keycode[1], packet.keycode[2], packet.keycode[3]);
             printf("%s\n", keystate);
             printf("prev %02x %02x %02x %02x\n", prev_keycode[0],prev_keycode[1], prev_keycode[2], prev_keycode[3]);
-            fbputs(keystate, 6, 0);
+            // fbputs(keystate, 6, 0);
             printf("%s\n", editor);
 
             // compares state with previous buffer
@@ -287,15 +287,9 @@ void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
     // Make sure the buffer does not overflow, leaving extra space for '\0' and '|')
-    if (len + 2 >= BUFFER_SIZE) {
+    if (len + 1 >= BUFFER_SIZE) {
         printf("Buffer full\n");
         return;
-    }
-
-    // **Remove the old cursor '|'
-    char *cursorPos = strchr(buf, '|'); // Search cursor '|'
-    if (cursorPos) {
-        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
     }
 
     // Shift the string right
@@ -303,13 +297,6 @@ void insert(char *buf, int* cursor, const char text) {
 
     buf[*cursor] = text;
     (*cursor)++;
-
-    // Insert cursor '|' at the new cursor position
-    memmove(buf + *cursor + 1, buf + *cursor, strlen(buf) - *cursor + 1);
-    buf[*cursor] = '|';
-
-    // Make sure the string ends with '\0'
-    buf[len + 2] = '\0';
 }
 
 void delete(char *buf, int* cursor) {
