@@ -203,6 +203,11 @@ int main()
                     if (cursorPos) {
                         memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
                     }
+
+                
+                    strncpy(screen[current_row], editor, MAX_COLS);
+                    screen[current_row][MAX_COLS - 1] = '\0';
+
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
 
                     // Scroll the screen
