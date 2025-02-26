@@ -164,6 +164,9 @@ int main()
               delete(editor, &cursor);
             }
             else if (key == 0x28) {  // Enter (Return) key
+                for (int col = 0; col < 64; col++) {
+                        fbputchar('*', 0, col);
+                    }
                  // If the user enters "/clear", clear the screen
                 if (strcmp(editor, "clear") == 0) {
                     fbclear();  // Clear the entire VGA screen
