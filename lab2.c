@@ -32,7 +32,7 @@
  * http://www.thegeekstuff.com/2011/12/c-socket-programming/
  * 
  */
-
+int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
@@ -60,7 +60,7 @@ int main()
     }
 
     /* Draw rows of asterisks across the top and bottom of the screen */
-    // fbclear();
+    fbclear();
     printf("cleared\n");
 
     for (col = 0 ; col < 64 ; col++) {
@@ -151,7 +151,7 @@ int main()
                 }
                 else {
                     insert(editor, &cursor, 'a' + key - 0x04);
-                }
+                    }
             }
             // TODO: number
             // TODO: pervent editor overflow
@@ -162,6 +162,46 @@ int main()
             // backspace
             else if (key == 0x2a) {
               delete(editor, &cursor);
+            }
+            
+            else if (key == 0x28) {  // Enter (Return) key
+                // Refresh top line
+                for (int col = 0; col < 64; col++) {
+                        fbputchar('*', 0, col);
+                    }
+                 // If the user enters "/clear", clear the screen
+                if (strcmp(editor, "clear") == 0) {
+                    fbclear();  // Clear the entire VGA screen
+                    memset(editor, 0, BUFFER_SIZE);  // Clear the input box
+                    cursor = 0;
+                    current_row = 1;
+                    // Redraw the dividing line
+                    for (int col = 0; col < 64; col++) {
+                        fbputchar('*', 0, col);
+                        fbputchar('*', 11, col);
+                        fbputchar('*', 23, col);
+                    }
+
+                    // Redisplay the welcome message
+                    // fbputs("Hello CSEE 4840 World!", 4, 10);
+                }
+                else if (strlen(editor) > 0) {
+                    // Remove the cursor '|'
+                    char *cursorPos = strchr(editor, '|');
+                    if (cursorPos) {
+                        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
+                    }
+                    write(sockfd, editor, strlen(editor));  // Send a message to the server
+            
+                    // Display sent messages at the top of the screen
+                    fbputchunk(editor, 0, 0, BUFFER_SIZE);
+            
+                    // Clear the input box (bottom area)
+                    memset(editor, 0, BUFFER_SIZE);
+                    fbclearln(12);
+                    fbclearln(13);
+                    cursor = 0;
+                }
             }
 
             // write line
@@ -195,33 +235,85 @@ void *network_thread_f(void *ignored)
 {
     char recvBuf[BUFFER_SIZE];
     int n;
-    /* Receive data */
-    while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
-        recvBuf[n] = '\0';
-        printf("%s", recvBuf);
-        fbputs(recvBuf, 8, 0);
+    // /* Receive data */
+    // while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
+    //     recvBuf[n] = '\0';
+    //     printf("%s", recvBuf);
+    //     fbputs(recvBuf, 8, 0);
+    // }
+    // int current_row = 0;
+
+    while ((n = read(sockfd, recvBuf, BUFFER_SIZE - 1)) > 0) {
+        recvBuf[n] = '\0';  
+        printf("Received: %s\n", recvBuf);
+
+        // Display server messages, each message is wrapped
+        fbputchunk(recvBuf, current_row, 0, BUFFER_SIZE);
+        current_row++;
+
+        // If the message exceeds 8 lines, scroll the screen
+        // if (current_row >= 8) {
+        //     fbscroll();
+        //     current_row = 7;
+        // }
     }
 
     return NULL;
 }
 
+// void fbscroll() {
+//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
+//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
+    
+//     fbclearln(7);  // Clear the last row
+// }
+
 /*
  * Inserts the character `text` to `buf`, at position specified by `cursor`
  * Cursor is the index of the buf array
  */
+// void insert(char *buf, int* cursor, const char text) {
+//     int len = strlen(buf);
+
+//     // don't forget \0
+//     if (len + 1 >= BUFFER_SIZE) {
+//         printf("Buffer full\n");
+//         return;
+//     }
+
+//     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
+//     buf[*cursor] = text;
+//     (*cursor)++;
+// }
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
-    // don't forget \0
-    if (len + 1 >= BUFFER_SIZE) {
+    // Make sure the buffer does not overflow, leaving extra space for '\0' and '|')
+    if (len + 2 >= BUFFER_SIZE) {
         printf("Buffer full\n");
         return;
     }
 
+    // **Remove the old cursor '|'
+    char *cursorPos = strchr(buf, '|'); // Search cursor '|'
+    if (cursorPos) {
+        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
+    }
+
+    // Shift the string right
     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
+
     buf[*cursor] = text;
     (*cursor)++;
+
+    // Insert cursor '|' at the new cursor position
+    memmove(buf + *cursor + 1, buf + *cursor, strlen(buf) - *cursor + 1);
+    buf[*cursor] = '|';
+
+    // Make sure the string ends with '\0'
+    buf[len + 2] = '\0';
 }
+
 void delete(char *buf, int* cursor) {
   int len = strlen(buf);
 
