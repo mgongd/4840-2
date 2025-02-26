@@ -36,7 +36,7 @@ int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
-void scroll_vga()
+void scroll_vga();
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
