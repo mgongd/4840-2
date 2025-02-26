@@ -288,30 +288,29 @@ void *network_thread_f(void *ignored)
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
-    // 确保缓冲区不会溢出（额外留一个位置给 '\0'）
-    if (len + 2 >= BUFFER_SIZE) {  // 额外预留 1 个字符给光标 '|'
+    // Make sure the buffer does not overflow, leaving extra space for '\0' and '|')
+    if (len + 2 >= BUFFER_SIZE) {
         printf("Buffer full\n");
         return;
     }
 
-    // **移除旧光标 '|'（如果存在）**
-    char *cursorPos = strchr(buf, '|'); // 查找光标 '|'
+    // **Remove the old cursor '|'
+    char *cursorPos = strchr(buf, '|'); // Search cursor '|'
     if (cursorPos) {
-        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // 删除光标
+        memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
     }
 
-    // **右移字符串，腾出空间**
+    // Shift the string right
     memmove(buf + *cursor + 1, buf + *cursor, len - *cursor + 1);
 
-    // **插入字符**
     buf[*cursor] = text;
     (*cursor)++;
 
-    // **在新的 cursor 位置插入光标 '|'**
+    // Insert cursor '|' at the new cursor position
     memmove(buf + *cursor + 1, buf + *cursor, strlen(buf) - *cursor + 1);
     buf[*cursor] = '|';
 
-    // **确保字符串以 '\0' 结尾**
+    // Make sure the string ends with '\0'
     buf[len + 2] = '\0';
 }
 
