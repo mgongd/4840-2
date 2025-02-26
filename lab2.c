@@ -36,6 +36,7 @@ int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
+void scroll_vga()
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -169,7 +170,7 @@ int main()
                 for (int col = 0; col < 64; col++) {
                         fbputchar(' ', 0, col);
                     }
-                 // If the user enters "/clear", clear the screen
+                 // If the user enters "clear", clear the screen
                 if (strcmp(editor, "clear") == 0) {
                     fbclear();  // Clear the entire VGA screen
                     memset(editor, 0, BUFFER_SIZE);  // Clear the input box
@@ -192,6 +193,12 @@ int main()
                         memmove(cursorPos, cursorPos + 1, strlen(cursorPos)); // remove '|'
                     }
                     write(sockfd, editor, strlen(editor));  // Send a message to the server
+
+                    // Scroll the screen
+                    if (current_row >= 15) {
+                        scroll_vga();
+                        current_row = 14;
+                    }
             
                     // Display sent messages at the top of the screen
                     fbputchunk(editor, 0, 0, BUFFER_SIZE);
@@ -252,21 +259,22 @@ void *network_thread_f(void *ignored)
         current_row++;
 
         // If the message exceeds 8 lines, scroll the screen
-        // if (current_row >= 8) {
-        //     fbscroll();
-        //     current_row = 7;
-        // }
+        if (current_row >= 15) {
+            scroll_vga();
+            current_row = 14;
+        }
     }
 
     return NULL;
 }
 
-// void fbscroll() {
-//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
-//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
-    
-//     fbclearln(7);  // Clear the last row
-// }
+void scroll_vga() {
+    for (int row = 0; row < 15; row++) {
+        fbcopy(row + 1, row);
+    }
+    fbclearln(14);
+}
+
 
 /*
  * Inserts the character `text` to `buf`, at position specified by `cursor`
