@@ -67,7 +67,6 @@ int main()
     }
 
 
-    fbputs("Hello CSEE 4840 World!", 4, 10);
 
     /* Open the keyboard */
     if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
