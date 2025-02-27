@@ -1,12 +1,4 @@
-/*
- * fbputchar: Framebuffer character generator
- *
- * Assumes 32bpp
- *
- * References:
- *
- * https://web.mit.edu/~firebird/arch/sun4x_59/doc/html/emb-framebuffer-howto.html
- * https://web.archive.org/web/20110515014922/https://web.njit.edu/all_topics/Prog_Lang_Docs/html/qt/emb-framebuffer-howto.html
+/* * fbputchar: Framebuffer character generator * * Assumes 32bpp * * References: * * https://web.mit.edu/~firebird/arch/sun4x_59/doc/html/emb-framebuffer-howto.html * https://web.archive.org/web/20110515014922/https://web.njit.edu/all_topics/Prog_Lang_Docs/html/qt/emb-framebuffer-howto.html
  *
  * https://web.archive.org/web/20110415224759/http://www.diskohq.com/docu/api-reference/fb_8h-source.html
  */
@@ -19,6 +11,7 @@
 #include <sys/ioctl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <linux/fb.h>
 
@@ -203,10 +196,27 @@ void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
 
 */
 
+/* end included */
+void fbscroll(int start, int end, int rows) {
+    size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
+    unsigned char *src = framebuffer + (start * row_size);
+    unsigned char *dst = src + rows * row_size;
+    size_t move_size = (end - start - rows + 1) * row_size;
+    // clear the last rows
+    for (int i = 0; i < rows; i++) {
+        fbclearln(end - i);
+    }
+    
+
+    memmove(dst, src, move_size);
+    for (int i = 0; i < rows; i++) {
+        fbclearln(start + i);
+    }
+}
+
 /* Clear the entire screen */
 void fbclear() 
-{
-    memset(framebuffer, 0, fb_finfo.smem_len);
+{ memset(framebuffer, 0, fb_finfo.smem_len);
 }
 
 /* Clear one line */

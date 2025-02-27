@@ -62,8 +62,14 @@ int main()
     // Initialize screen on program startup
     fbclear();
     for (col = 0 ; col < 64 ; col++) {
+        
+        fbputchar('-', 18, col);
+        fbputchar('-', 19, col);
+        fbputchar('-', 20, col);
         fbputchar('-', 21, col);
     }
+
+    fbscroll(18, 21, 2);
 
     fbputs("Hello CSEE 4840 World!", 4, 10);
 

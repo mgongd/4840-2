@@ -12,6 +12,7 @@ extern void fbputchar(char, int, int);
 extern void fbputs(const char *, int, int);
 extern void fbputchunk(const char *, int, int, int);
 extern void fbputeditor(const char *, int *, int, int, int);
+extern void fbscroll(int, int, int);
 extern void fbclear();
 extern void fbclearln(int);
 extern void fbclearchar(int, int);
