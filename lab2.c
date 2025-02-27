@@ -23,6 +23,7 @@
 #define SERVER_PORT 42000
 
 #define BUFFER_SIZE 128
+#define RECV_BUFFER_SIZE 192
 
 /*
  * References:
@@ -62,14 +63,9 @@ int main()
     // Initialize screen on program startup
     fbclear();
     for (col = 0 ; col < 64 ; col++) {
-        
-        fbputchar('-', 18, col);
-        fbputchar('-', 19, col);
-        fbputchar('-', 20, col);
         fbputchar('-', 21, col);
     }
 
-    fbscroll(18, 21, 2);
 
     fbputs("Hello CSEE 4840 World!", 4, 10);
 
@@ -252,23 +248,23 @@ int main()
 
 void *network_thread_f(void *ignored)
 {
-    char recvBuf[BUFFER_SIZE];
+    char recvBuf[RECV_BUFFER_SIZE];
     int n;
-    // /* Receive data */
-    // while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
-    //     recvBuf[n] = '\0';
-    //     printf("%s", recvBuf);
-    //     fbputs(recvBuf, 8, 0);
-    // }
-    // int current_row = 0;
+    int lines;
 
-    while ((n = read(sockfd, recvBuf, BUFFER_SIZE)) > 0) {
+    while ((n = read(sockfd, recvBuf, RECV_BUFFER_SIZE)) > 0) {
         recvBuf[n] = '\0';  
         printf("Received: %s\n", recvBuf);
 
+        lines = n % 64 ? n / 64 + 1 : n / 64;
+
+        printf("%d, %d\n", n, lines);
+        
+
+        fbscroll(1, 20, lines);
         // Display server messages, each message is wrapped
-        fbputchunk(recvBuf, current_row, 0, BUFFER_SIZE + 64);
-        current_row++;
+        fbputchunk(recvBuf, 1, 0, RECV_BUFFER_SIZE);
+        // current_row++;
 
     }
 
