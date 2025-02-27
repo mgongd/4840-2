@@ -162,7 +162,7 @@ void fbputchunk(const char *s, int row, int offset, int n) {
     s += offset;
     int col = 0;
     while ((c = *s++) != 0 && n > 0) {
-        if (col < 64)
+        if (col < 64)    // TODO: fb_vinfo.xres / (FONT_WIDTH * 2)
             fbputchar(c, row, col++);
         else {  // start a new line
             col = 0;
@@ -178,7 +178,7 @@ void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
     int col = 0;
     int i = 0;
         while ((c = *s++) != 0 && i < n) {
-            if (col < 64)
+            if (col < 64)    // TODO: avoid hard-coding this
                 if (i == *cursor)   fbputcursor(c, row, col++);
                 else fbputchar(c, row, col++);
             else {  // start a new line
@@ -190,23 +190,21 @@ void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
         }
     if (*cursor == n) fbputcursor(' ', row, col++);
 }
-/* 8 X 16 console font from /lib/kbd/consolefonts/lat0-16.psfu.gz
 
-   od --address-radix=n --width=16 -v -t x1 -j 4 -N 2048 lat0-16.psfu
 
-*/
-
-/* end included */
+/* Scrolls from row `start` to row `end` (includive) DOWN by `rows`*/
 void fbscroll(int start, int end, int rows) {
     size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
+    // TODO: accomodate for y_offset
     unsigned char *src = framebuffer + (start * row_size);
     unsigned char *dst = src + rows * row_size;
     size_t move_size = (end - start - rows + 1) * row_size;
-    // clear the last rows
+    
+    // clear the last rows 
+    // TODO: do we have to do it?
     for (int i = 0; i < rows; i++) {
         fbclearln(end - i);
     }
-    
 
     memmove(dst, src, move_size);
     for (int i = 0; i < rows; i++) {
@@ -223,6 +221,8 @@ void fbclear()
 void fbclearln(int row)
 {
     int y;
+    // TODO: size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
+    // memset(line, 0, row_size);
     unsigned char *line = framebuffer + (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length;
     for (y = 0; y < FONT_HEIGHT * 2; y++)
     {
@@ -235,7 +235,7 @@ void fbclearln(int row)
  * WARNING: not tested yet*/
 void fbclearchar(int row, int col)
 {
-    int y, x;
+    int y;
     unsigned char *left = framebuffer +
         (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length +
         (col * FONT_WIDTH * 2 + fb_vinfo.xoffset) * BITS_PER_PIXEL / 8;
@@ -246,7 +246,11 @@ void fbclearchar(int row, int col)
     }
 }
 
+/* 8 X 16 console font from /lib/kbd/consolefonts/lat0-16.psfu.gz
 
+   od --address-radix=n --width=16 -v -t x1 -j 4 -N 2048 lat0-16.psfu
+
+*/
 static unsigned char font[] = {
     0x00, 0x00, 0x7e, 0xc3, 0x99, 0x99, 0xf3, 0xe7, 0xe7, 0xff, 0xe7, 0xe7, 0x7e, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x76, 0xdc, 0x00, 0x76, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
