@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdint.h>
+
 #include <linux/fb.h>
 
 #define FBDEV "/dev/fb0"
@@ -102,6 +104,45 @@ void fbputchar(char c, int row, int col)
         }
         if (y & 0x1) pixelp++;
     }
+}
+
+char fbgetchar(int row, int col) {
+    int x, y;
+    unsigned char *pixel, *left = framebuffer +
+        (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length +
+        (col * FONT_WIDTH * 2 + fb_vinfo.xoffset) * BITS_PER_PIXEL / 8;
+
+    for (char c = 0; c < 128; c++) {
+        unsigned char *pixelp = font + FONT_HEIGHT * c;
+        int match = 1;
+
+        for (y = 0; y < FONT_HEIGHT * 2; y++, left += fb_finfo.line_length) {
+            pixel = left;
+            unsigned char pixels = *pixelp;
+            unsigned char mask = 0x80;
+
+            for (x = 0; x < FONT_WIDTH; x++) {
+                int pixel_color = pixel[0] | pixel[1] | pixel[2];
+
+                if ((pixels & mask) && pixel_color == 0) {
+                    match = 0;
+                    break;
+                }
+                if (!(pixels & mask) && pixel_color != 0) {
+                    match = 0;
+                    break;
+                }
+
+                pixel += 4;
+                mask >>= 1;
+            }
+            if (!match) break;
+            if (y & 0x1) pixelp++;
+        }
+
+        if (match) return c;
+    }
+    return ' ';
 }
 
 /* puts inverted cursor character to the screen */
