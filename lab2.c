@@ -142,78 +142,61 @@ int main()
                 }
             }
             // printf("keystate: %02x\n", key);
-            
 
-            // arrow press for cursor movement
-            if (key == 0x50) {
-                if (cursor > 0)     cursor--;
-            }
-            if (key == 0x4f) {
-                if (cursor < strlen(editor))   cursor++;
-            }
+            switch (key) {
+                // arrow press for cursor movement
+                case 0x50:
+                    if (cursor > 0)    cursor--; 
+                    break;
+                case 0x4f:
+                    if (cursor < strlen(editor))    cursor ++;
+                    break;
 
-            // letter input
-            if (key >= 0x04 && key <= 0x1d){
-                // shift pressed
-                if (packet.modifiers & 0x22) {
-                    insert(editor, &cursor, 'A' + key - 0x04);
-                }
-                else {
-                    insert(editor, &cursor, 'a' + key - 0x04);
+                // TODO: make a const string of the keybinds, from A to Z to whatever.
+                // TODO: ternary operators for elegance and simplicity
+                // letter press
+                case 0x04 ... 0x1d:
+                    if (packet.modifiers & 0x22) {
+                        insert(editor, &cursor, 'A' + key - 0x04);
                     }
-            }
-
-            // TODO: number
-            // TODO: punctuation
-
-
-            // space input
-            else if (key == 0x2c) {
-              insert(editor, &cursor, 0x20);
-            }
-
-            // backspace delete
-            else if (key == 0x2a) {
-              delete(editor, &cursor);
-            }
-            
-            // return key to send
-            else if (key == 0x28) {  
-                /*
-                // Refresh top line
-                for (int col = 0; col < 64; col++) {
+                    else {
+                        insert(editor, &cursor, 'a' + key - 0x04);
                     }
-                */
-                /*
-                 // If the user enters "/clear", clear the screen
-                if (strcmp(editor, "clear") == 0) {
-                    fbclear();  // Clear the entire VGA screen
-                    editor[0] = '\0';  // Clear the input box
-                    cursor = 0;
-                    current_row = 1;
-                    // Redraw the dividing line
-                    for (int col = 0; col < 64; col++) {
-                        fbputchar('*', 0, col);
-                        fbputchar('*', 11, col);
-                        fbputchar('*', 23, col);
+                    break;
+
+                // number input
+                case 0x1e ... 0x27:
+                    if (packet.modifiers & 0x22) {
+                        insert(editor, &cursor, "!@#$%^&*()"[key - 0x1e]);  // Shifted symbols
+                    } else {
+                        insert(editor, &cursor, '1' + key - 0x1e);        // Digits
                     }
+                    break;
 
-                    // Redisplay the welcome message
-                    // fbputs("Hello CSEE 4840 World!", 4, 10);
-                }
-                */
-                if (strlen(editor) > 0) {
-                    write(sockfd, editor, strlen(editor));  // Send a message to the server
+                // other symbols and space
+                case 0x2c ... 0x38:
+                    {
+                        const char symbols[] = " -=[]\\;\'`,./";
+                        const char shifted_symbols[] = " _+{}|:\"~<>?";
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2d] : symbols[key - 0x2d]);
+                    }
+                    break;
 
-                    /*
-                    // Display sent messages at the top of the screen
-                    fbputchunk(editor, 0, 0, BUFFER_SIZE);
-                    */
-            
-                    // Reset editor
-                    editor[0] = '\0';
-                    cursor = 0;
-                }
+                // backspace delete
+                case 0x2a:
+                    delete(editor, &cursor);
+                    break;
+
+                // return key to send
+                case 0x28:
+                    if (strlen(editor) > 0) {
+                        write(sockfd, editor, strlen(editor));  // Send a message to the server
+                        // Reset editor
+                        editor[0] = '\0';
+                        cursor = 0;
+                    }
+                    break;
+        
             }
 
             // write line from the editor
