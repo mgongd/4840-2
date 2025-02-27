@@ -27,7 +27,6 @@
 #define MAX_ROWS 19   // VGA display size
 #define MAX_COLS 64
 
-char screen[MAX_ROWS][MAX_COLS] = { {' '} };  // Buffer to store screen content
 
 /*
  * References:
@@ -41,6 +40,8 @@ int current_row = 0;
 int sockfd; /* Socket file descriptor */
 void insert(char *, int *, const char);
 void delete(char *, int *);
+void scroll_vga();
+
 
 struct libusb_device_handle *keyboard;
 uint8_t endpoint_address;
@@ -284,22 +285,14 @@ void *network_thread_f(void *ignored)
 }
 
 void scroll_vga() {
-  // Move all lines up in the buffer
-  for (int row = 1; row < MAX_ROWS; row++) {
-      for (int col = 0; col < MAX_COLS; col++) {
-          screen[row - 1][col] = screen[row][col];  // Shift text up
-          fbputchar(screen[row][col], row - 1, col); // Update VGA display
-      }
-  }
+    for (int row = 0; row < MAX_ROWS - 1; row++) {
+        for (int col = 0; col < 64; col++) {
+            char c = fbgetchar(row + 1, col);
+            fbputchar(c, row, col);
+        }
+    }
 
-  // Clear the last row
-  fbclearln(max_rows - 1);
-  // Clear the last row in the buffer
-  for (int col = 0; col < MAX_COLS; col++) {
-      screen[MAX_ROWS - 1][col] = ' ';
-      fbputchar(' ', MAX_ROWS - 1, col); // Clear last row on VGA
-  }
-
+    fbclearln(MAX_ROWS - 1);
 }
 
 // void fbscroll() {
