@@ -183,7 +183,7 @@ int main()
                     {
                         const char symbols[] = " -=[]\\";
                         const char shifted_symbols[] = " _+{}|";
-                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2d] : symbols[key - 0x2d]);
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2c] : symbols[key - 0x2c]);
                     }
                     break;
 
@@ -203,6 +203,8 @@ int main()
                         editor[0] = '\0';
                         cursor = 0;
                     }
+                    break;
+                default:
                     break;
         
             }
@@ -263,16 +265,6 @@ void *network_thread_f(void *ignored)
     return NULL;
 }
 
-// void fbscroll() {
-//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
-//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
-    
-// }
-
-/*
- * Inserts the character `text` to `buf`, at position specified by `cursor`
- * Cursor is the index of the buf array
- */
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
