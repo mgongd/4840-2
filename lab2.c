@@ -169,22 +169,30 @@ int main()
                     if (packet.modifiers & 0x22) {
                         insert(editor, &cursor, "!@#$%^&*()"[key - 0x1e]);  // Shifted symbols
                     } else {
-                        insert(editor, &cursor, '1' + key - 0x1e);        // Digits
-                    }
-                    break;
-
-                // other symbols and space
-                case 0x2c ... 0x38:
-                    {
-                        const char symbols[] = " -=[]\\;\'`,./";
-                        const char shifted_symbols[] = " _+{}|:\"~<>?";
-                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2d] : symbols[key - 0x2d]);
+                        insert(editor, &cursor, "1234567890"[key - 0x1e]);        // Digits
                     }
                     break;
 
                 // backspace delete
                 case 0x2a:
                     delete(editor, &cursor);
+                    break;
+
+                // other symbols and space
+                case 0x2c ... 0x31:
+                    {
+                        const char symbols[] = " -=[]\\";
+                        const char shifted_symbols[] = " _+{}|";
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2d] : symbols[key - 0x2d]);
+                    }
+                    break;
+
+                case 0x33 ... 0x38:
+                    {
+                        const char symbols[] = ";\'`,./";
+                        const char shifted_symbols[] = ":\"~<>?";
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x33] : symbols[key - 0x33]);
+                    }
                     break;
 
                 // return key to send
@@ -224,6 +232,8 @@ int main()
 
     /* Wait for the network thread to finish */
     pthread_join(network_thread, NULL);
+
+    close(sockfd);
 
     return 0;
 }
