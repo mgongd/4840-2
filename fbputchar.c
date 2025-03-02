@@ -162,7 +162,7 @@ void fbputchunk(const char *s, int row, int offset, int n) {
     s += offset;
     int col = 0;
     while ((c = *s++) != 0 && n > 0) {
-        if (col < 64)    // TODO: fb_vinfo.xres / (FONT_WIDTH * 2)
+        if (col < (fb_vinfo.xres / (FONT_WIDTH * 2)))    
             fbputchar(c, row, col++);
         else {  // start a new line
             col = 0;
@@ -173,39 +173,44 @@ void fbputchunk(const char *s, int row, int offset, int n) {
 }
 
 void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
+    printf("%d\n", fb_vinfo.xres/(FONT_WIDTH * 2));
     char c;
     s += offset;
     int col = 0;
     int i = 0;
         while ((c = *s++) != 0 && i < n) {
-            if (col < 64)    // TODO: avoid hard-coding this
+            if (col < (fb_vinfo.xres / (FONT_WIDTH * 2)))
                 if (i == *cursor)   fbputcursor(c, row, col++);
                 else fbputchar(c, row, col++);
             else {  // start a new line
                 col = 0;
-                if (i == *cursor) fbputcursor(c, ++row, col);
-                else  fbputchar(c, ++row, col);
+                if (i == *cursor) fbputcursor(c, ++row, col++);
+                else  fbputchar(c, ++row, col++);
             }    
             i++;
         }
-    if (*cursor == n) fbputcursor(' ', row, col++);
+    // appending
+    if (*cursor == n){
+       if (n % (fb_vinfo.xres / (FONT_WIDTH * 2)) || n == 0) {
+           fbputcursor(' ', row, col++);
+       }
+       else {
+           col = 0;
+           fbputcursor('_', ++row, n % (fb_vinfo.xres / (FONT_WIDTH * 2)));
+
+       }
+    }
 }
 
 
 /* Scrolls from row `start` to row `end` (includive) DOWN by `rows`*/
 void fbscroll(int start, int end, int rows) {
     size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
-    // TODO: accomodate for y_offset
-    unsigned char *src = framebuffer + (start * row_size);
+    size_t offset =fb_vinfo.yoffset * fb_finfo.line_length;
+    unsigned char *src = framebuffer + (start * row_size) + offset;
     unsigned char *dst = src + rows * row_size;
     size_t move_size = (end - start - rows + 1) * row_size;
     
-    // clear the last rows 
-    // TODO: do we have to do it?
-    for (int i = 0; i < rows; i++) {
-        fbclearln(end - i);
-    }
-
     memmove(dst, src, move_size);
     for (int i = 0; i < rows; i++) {
         fbclearln(start + i);
@@ -220,15 +225,10 @@ void fbclear()
 /* Clear one line */
 void fbclearln(int row)
 {
-    int y;
-    // TODO: size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
-    // memset(line, 0, row_size);
+    size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
     unsigned char *line = framebuffer + (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length;
-    for (y = 0; y < FONT_HEIGHT * 2; y++)
-    {
-        memset(line, 0, fb_finfo.line_length);
-        line += fb_finfo.line_length;
-    }
+
+    memset(line, 0, row_size);
 }
 
 /* Clear one character

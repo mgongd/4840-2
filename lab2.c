@@ -169,22 +169,30 @@ int main()
                     if (packet.modifiers & 0x22) {
                         insert(editor, &cursor, "!@#$%^&*()"[key - 0x1e]);  // Shifted symbols
                     } else {
-                        insert(editor, &cursor, '1' + key - 0x1e);        // Digits
-                    }
-                    break;
-
-                // other symbols and space
-                case 0x2c ... 0x38:
-                    {
-                        const char symbols[] = " -=[]\\;\'`,./";
-                        const char shifted_symbols[] = " _+{}|:\"~<>?";
-                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2d] : symbols[key - 0x2d]);
+                        insert(editor, &cursor, "1234567890"[key - 0x1e]);        // Digits
                     }
                     break;
 
                 // backspace delete
                 case 0x2a:
                     delete(editor, &cursor);
+                    break;
+
+                // other symbols and space
+                case 0x2c ... 0x31:
+                    {
+                        const char symbols[] = " -=[]\\";
+                        const char shifted_symbols[] = " _+{}|";
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x2c] : symbols[key - 0x2c]);
+                    }
+                    break;
+
+                case 0x33 ... 0x38:
+                    {
+                        const char symbols[] = ";\'`,./";
+                        const char shifted_symbols[] = ":\"~<>?";
+                        insert(editor, &cursor, (packet.modifiers & 0x22) ? shifted_symbols[key - 0x33] : symbols[key - 0x33]);
+                    }
                     break;
 
                 // return key to send
@@ -195,6 +203,8 @@ int main()
                         editor[0] = '\0';
                         cursor = 0;
                     }
+                    break;
+                default:
                     break;
         
             }
@@ -225,6 +235,9 @@ int main()
     /* Wait for the network thread to finish */
     pthread_join(network_thread, NULL);
 
+    close(sockfd);
+    exit(0);
+
     return 0;
 }
 
@@ -253,16 +266,6 @@ void *network_thread_f(void *ignored)
     return NULL;
 }
 
-// void fbscroll() {
-//     memmove(framebuffer, framebuffer + fb_finfo.line_length * FONT_HEIGHT, 
-//             fb_finfo.smem_len - fb_finfo.line_length * FONT_HEIGHT);
-    
-// }
-
-/*
- * Inserts the character `text` to `buf`, at position specified by `cursor`
- * Cursor is the index of the buf array
- */
 void insert(char *buf, int* cursor, const char text) {
     int len = strlen(buf);
 
