@@ -236,6 +236,7 @@ int main()
     pthread_join(network_thread, NULL);
 
     close(sockfd);
+    exit(0);
 
     return 0;
 }

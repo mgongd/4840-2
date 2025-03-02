@@ -225,15 +225,10 @@ void fbclear()
 /* Clear one line */
 void fbclearln(int row)
 {
-    int y;
-    // TODO: size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
-    // memset(line, 0, row_size);
+    size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
     unsigned char *line = framebuffer + (row * FONT_HEIGHT * 2 + fb_vinfo.yoffset) * fb_finfo.line_length;
-    for (y = 0; y < FONT_HEIGHT * 2; y++)
-    {
-        memset(line, 0, fb_finfo.line_length);
-        line += fb_finfo.line_length;
-    }
+
+    memset(line, 0, row_size);
 }
 
 /* Clear one character
