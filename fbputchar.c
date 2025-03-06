@@ -206,16 +206,25 @@ void fbputeditor(const char *s, int *cursor, int row, int offset, int n) {
 /* Scrolls from row `start` to row `end` (includive) DOWN by `rows`*/
 void fbscroll(int start, int end, int rows) {
     size_t row_size = fb_finfo.line_length * FONT_HEIGHT * 2;
-    size_t offset =fb_vinfo.yoffset * fb_finfo.line_length;
+    size_t offset = fb_vinfo.yoffset * fb_finfo.line_length;
     unsigned char *src = framebuffer + (start * row_size) + offset;
     unsigned char *dst = src + rows * row_size;
-    size_t move_size = (end - start - rows + 1) * row_size;
-    
-    memmove(dst, src, move_size);
-    for (int i = 0; i < rows; i++) {
-        fbclearln(start + i);
+    if (rows >= 0) {
+        size_t move_size = (end - start - rows + 1) * row_size;
+        memmove(dst, src, move_size);
+        for (int i = 0; i < rows; i++) {
+            fbclearln(start + i);
+        }
+    }
+    else {
+        size_t move_size = (end - start + rows + 1) * row_size;
+        memmove(dst - rows * row_size, src - rows * row_size, move_size);
+        for (int i = 0; i < rows * (-1); i++) {
+            fbclearln(end -  i);
+        }
     }
 }
+
 
 /* Clear the entire screen */
 void fbclear() 
