@@ -2,7 +2,7 @@
  *
  * CSEE 4840 Lab 2 for 2019
  *
- * Name/UNI: Please Changeto Yourname (pcy2301)
+ * Name/UNI: Ming Gong (mg4264), Tianshuo Jin (tj2591, Zidong Xu (zx2507)
  */
 #include "fbputchar.h"
 #include <stdio.h>
@@ -53,7 +53,7 @@ int main()
 
     struct usb_keyboard_packet packet;
     int transferred;
-    char keystate[12];
+    // char keystate[12];
 
     if ((err = fbopen()) != 0) {
         fprintf(stderr, "Error: Could not open framebuffer: %d\n", err);
@@ -63,10 +63,9 @@ int main()
     // Initialize screen on program startup
     fbclear();
     for (col = 0 ; col < 64 ; col++) {
+        fbputchar('-', 0, col);
         fbputchar('-', 21, col);
     }
-
-
 
     /* Open the keyboard */
     if ( (keyboard = openkeyboard(&endpoint_address)) == NULL ) {
@@ -98,16 +97,8 @@ int main()
     /* Start the network thread */
     pthread_create(&network_thread, NULL, network_thread_f, NULL);
 
-    /* Look for and handle keypresses */
-    /* 
-     * Backspace: 2a
-     * leftarrow: 50
-     * rightarrow: 4f
-     * a: 04
-     * z: 1d
-     */
     // editor buffer for input
-    char *editor = malloc(BUFFER_SIZE);  // don't forget to free this
+    char *editor = malloc(BUFFER_SIZE);
     editor[0] = '\0';
 
     // cursor variable
@@ -118,13 +109,14 @@ int main()
                 (unsigned char *) &packet, sizeof(packet),
                 &transferred, 0);
         if (transferred == sizeof(packet)) {
+         /* 
             sprintf(keystate, "%02x %02x %02x %02x %02x", packet.modifiers, packet.keycode[0],
                     packet.keycode[1], packet.keycode[2], packet.keycode[3]);
             printf("%s\n", keystate);
             printf("prev %02x %02x %02x %02x\n", prev_keycode[0],prev_keycode[1], prev_keycode[2], prev_keycode[3]);
             // fbputs(keystate, 6, 0);
             printf("%s\n", editor);
-
+        */
 
             // compares state with previous buffer
             key = 0;
@@ -146,14 +138,14 @@ int main()
             switch (key) {
                 // arrow press for cursor movement
                 case 0x50:
-                    if (cursor > 0)    cursor--; 
+                    if (cursor > 0) 
+                        cursor--; 
                     break;
                 case 0x4f:
-                    if (cursor < strlen(editor))    cursor ++;
+                    if (cursor < strlen(editor)) 
+                        cursor++;
                     break;
 
-                // TODO: make a const string of the keybinds, from A to Z to whatever.
-                // TODO: ternary operators for elegance and simplicity
                 // letter press
                 case 0x04 ... 0x1d:
                     if (packet.modifiers & 0x22) {
@@ -236,7 +228,6 @@ int main()
     pthread_join(network_thread, NULL);
 
     close(sockfd);
-    exit(0);
 
     return 0;
 }
@@ -253,14 +244,10 @@ void *network_thread_f(void *ignored)
 
         lines = n % 64 ? n / 64 + 1 : n / 64;
 
-        printf("%d, %d\n", n, lines);
-        
-
-        fbscroll(1, 20, lines);
+        fbscroll(1, 20, lines * (-1));
         // Display server messages, each message is wrapped
-        fbputchunk(recvBuf, 1, 0, RECV_BUFFER_SIZE);
-        // current_row++;
-
+        fbputchunk(recvBuf, 21 - lines, 0, RECV_BUFFER_SIZE);
+        printf("%s\n", recvBuf);
     }
 
     return NULL;
