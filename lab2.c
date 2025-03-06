@@ -115,7 +115,6 @@ int main()
             printf("%s\n", keystate);
             printf("prev %02x %02x %02x %02x\n", prev_keycode[0],prev_keycode[1], prev_keycode[2], prev_keycode[3]);
             // fbputs(keystate, 6, 0);
-            printf("%s\n", editor);
         */
 
             // compares state with previous buffer
@@ -136,16 +135,6 @@ int main()
             // printf("keystate: %02x\n", key);
 
             switch (key) {
-                // arrow press for cursor movement
-                case 0x50:
-                    if (cursor > 0) 
-                        cursor--; 
-                    break;
-                case 0x4f:
-                    if (cursor < strlen(editor)) 
-                        cursor++;
-                    break;
-
                 // letter press
                 case 0x04 ... 0x1d:
                     if (packet.modifiers & 0x22) {
@@ -164,6 +153,20 @@ int main()
                         insert(editor, &cursor, "1234567890"[key - 0x1e]);        // Digits
                     }
                     break;
+
+                // return key to send
+                case 0x28:
+                    if (strlen(editor) > 0) {
+                        write(sockfd, editor, strlen(editor));  // Send a message to the server
+                        // Reset editor
+                        editor[0] = '\0';
+                        cursor = 0;
+                    }
+                    break;
+                
+                case 0x29:
+                    free(editor);
+                    goto exit;
 
                 // backspace delete
                 case 0x2a:
@@ -187,32 +190,28 @@ int main()
                     }
                     break;
 
-                // return key to send
-                case 0x28:
-                    if (strlen(editor) > 0) {
-                        write(sockfd, editor, strlen(editor));  // Send a message to the server
-                        // Reset editor
-                        editor[0] = '\0';
-                        cursor = 0;
-                    }
+                // arrow press for cursor movement
+                case 0x4f:
+                    if (cursor < strlen(editor)) 
+                        cursor++;
                     break;
+
+                case 0x50:
+                    if (cursor > 0) 
+                        cursor--; 
+                    break;
+
                 default:
                     break;
-        
             }
 
             // write line from the editor
             fbclearln(22);
             fbclearln(23);
             fbputeditor(editor, &cursor, 22, 0, strlen(editor));
-            printf("%d\n", cursor);
+            // printf("%d\n", cursor);
             // printf("%s\n", editor);
 
-            if (packet.keycode[0] == 0x29) { /* ESC pressed? */
-                free(editor);
-                break;
-            }
-            
             // updates previous keycode
             for (int i = 0; i < 6; i++) {
                 prev_keycode[i] = packet.keycode[i];
@@ -220,6 +219,8 @@ int main()
         }
 
     }
+
+exit:
 
     /* Terminate the network thread */
     pthread_cancel(network_thread);
