@@ -1,11 +1,3 @@
-# TODO:
-## Complete the network communication
-- When your client receives a packet from the server, display it on the next line
-at the **top** (?) or the top portion?
-
-## Complete Editor Interface
-- Test all symbols are displayed correctly
-
 # FPGA Setup
 1. Connect workstation to the board via **MINI** USB (**NOT** the USB type-B)
 2. On **workstation**, start the *screen* terminal emulator of the board
